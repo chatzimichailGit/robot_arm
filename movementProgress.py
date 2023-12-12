@@ -78,13 +78,6 @@ def TLink(DH):
 
     return T
 
-# def create_table(doc, matrix):
-#     table = doc.add_table(rows=len(matrix), cols=len(matrix[0]), style='Table Grid')
-
-#     for i in range(len(matrix)):
-#         for j in range(len(matrix[0])):
-#             cell = table.cell(i, j)
-#             cell.text = str(matrix[i, j])
 
 def create_table(doc, matrix):
     table = doc.add_table(rows=matrix.shape[0], cols=matrix.shape[1], style='Table Grid')
@@ -92,11 +85,7 @@ def create_table(doc, matrix):
     for i in range(matrix.shape[0]):
         for j in range(matrix.shape[1]):
             cell = table.cell(i, j)
-            #cell.text = str(matrix[i, j])
-            #cell.text = latex(matrix[i, j])
             cell.text = pretty(matrix[i, j], use_unicode=True)
-
-
 
 def save_to_word(result_matrices):
     total_matrices = len(result_matrices)
@@ -111,6 +100,20 @@ def save_to_word(result_matrices):
     doc.save('forward_kinematics_result.docx')
     print("Word document saved with Forward Kinematics result.")
 
+def ask_yes_no_question():
+    while True:
+        user_input = input("Do you want to save results? (yes/no): ").lower()
+        
+        if user_input == 'yes':
+            print("You chose 'yes'. Proceeding...")
+            break
+        elif user_input == 'no':
+            print("You chose 'no'. Exiting...")
+            break
+        else:
+            print("Invalid input. Please enter 'yes' or 'no'.")
+    return user_input
+
 
 if __name__ == "__main__":
     TGe_result = ForwardKinematics()
@@ -119,5 +122,7 @@ if __name__ == "__main__":
     print("Result of Forward Kinematics:")
     pprint(TGe_result)
 
-    # Save the result to a Word document
-    save_to_word(transformation_matrices)
+
+    user_input = ask_yes_no_question()
+    if user_input == 'yes':
+        save_to_word(transformation_matrices)
