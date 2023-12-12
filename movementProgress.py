@@ -14,19 +14,28 @@ font.size = Pt(8)
 
 scale =1
 
+
 # INSTALL SYMPY . pip3 install sympy
 
 def ForwardKinematics():
     d2, theta1, theta2, theta3, L2, L3 = symbols('d2, theta1, theta2, theta3, L2, L3')
     theta4, theta5 = symbols('theta4, theta5')
-
+    a5, a3, d3 = symbols('a3, a5, d3')
     # a | α | d | θ
+    # DH4 = Matrix([
+    #     [0,0,0,pi/2],
+    #     [0,pi/2,0,theta2+pi/2],
+    #     [215.6/scale,0,298.7/scale,0],
+    #     [0,-pi/2,0,theta4-pi/2],
+    #     [356.6/scale,0,0,theta5]
+    # ])
+
     DH4 = Matrix([
         [0,0,0,pi/2],
         [0,pi/2,0,theta2+pi/2],
-        [215.6/scale,0,298.7/scale,0],
+        [a3,0,d3,0],
         [0,-pi/2,0,theta4-pi/2],
-        [356.6/scale,0,0,theta5]
+        [a5,0,0,theta5]
     ])
 
     DH = DH4
