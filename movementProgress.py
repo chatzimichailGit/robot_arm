@@ -13,6 +13,7 @@ font.name = 'Calibri'
 font.size = Pt(8)
 
 scale =1
+transformation_matrices = []
 
 
 # INSTALL SYMPY . pip3 install sympy
@@ -50,6 +51,13 @@ def ForwardKinematics():
 
     TGe = simplify(TGe)
     
+
+    for i in range(5):  # Adjust the range based on the number of matrices
+        T_result = TLink(DH.row(i))
+        transformation_matrices.append(T_result)
+    
+    transformation_matrices.append(TGe)
+
     return TGe
 
 
@@ -90,11 +98,15 @@ def create_table(doc, matrix):
 
 
 
-def save_to_word(result_matrix):
-
-    doc.add_heading('Forward Kinematics Result', level=1)
+def save_to_word(result_matrices):
+    total_matrices = len(result_matrices)
     
-    create_table(doc, result_matrix)
+    for i, matrix in enumerate(result_matrices):
+        if i == total_matrices - 1:
+            doc.add_heading(f'Final Transformation Matrix TGe', level=1)
+        else:
+            doc.add_heading(f'Transformation Matrix T{i}-{i+1}', level=1)
+        create_table(doc, matrix)
 
     doc.save('forward_kinematics_result.docx')
     print("Word document saved with Forward Kinematics result.")
@@ -102,9 +114,10 @@ def save_to_word(result_matrix):
 
 if __name__ == "__main__":
     TGe_result = ForwardKinematics()
+    
 
     print("Result of Forward Kinematics:")
     pprint(TGe_result)
-    
+
     # Save the result to a Word document
-    save_to_word(TGe_result)
+    save_to_word(transformation_matrices)
