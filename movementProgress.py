@@ -19,9 +19,15 @@ transformation_matrices = []
 # INSTALL SYMPY . pip3 install sympy
 
 def ForwardKinematics():
-    d2, theta1, theta2, theta3, L2, L3 = symbols('d2, theta1, theta2, theta3, L2, L3')
+    d1, theta1, theta2, theta3, L2, L3 = symbols('d1, theta1, theta2, theta3, L2, L3')
     theta4, theta5 = symbols('theta4, theta5')
-    a5, a3, d3 = symbols('a3, a5, d3')
+    a1, a3, d3 = symbols('a1, a3, d3')
+    
+    #Validate equations
+    # theta2 = 0
+    # theta4 = 0
+    # theta5 = 0
+
     # a | α | d | θ
     # DH4 = Matrix([
     #     [0,0,0,pi/2],
@@ -31,12 +37,29 @@ def ForwardKinematics():
     #     [356.6/scale,0,0,theta5]
     # ])
 
+    # DH4 = Matrix([
+    #     [0,0,0,pi/2],
+    #     [0,pi/2,0,theta2+pi/2],
+    #     [a3,0,d3,0],
+    #     [0,-pi/2,0,theta4-pi/2],
+    #     [a4,0,0,theta5]
+    # ])
+
+    # DH4 = Matrix([
+    #     [0,pi/2,0,theta2+pi/2],
+    #     [a3,0,d3,0],
+    #     [0,-pi/2,0,theta4-pi/2],
+    #     [a4,0,0,theta5]
+    # ])
+
+    theta1=0
+    theta2=0
+    theta3=0
+
     DH4 = Matrix([
-        [0,0,0,pi/2],
-        [0,pi/2,0,theta2+pi/2],
-        [a3,0,d3,0],
-        [0,-pi/2,0,theta4-pi/2],
-        [a5,0,0,theta5]
+        [0,pi/2,d1,theta1+pi/2],
+        [a1,-pi/2,0,theta2-pi/2],
+        [a3,0,0,theta3]
     ])
 
     DH = DH4
@@ -44,15 +67,16 @@ def ForwardKinematics():
     TG0 = TLink(DH.row(0))
     T01 = TLink(DH.row(1))
     T12 = TLink(DH.row(2))
-    T23 = TLink(DH.row(3))
-    T34 = TLink(DH.row(4))
+    #T23 = TLink(DH.row(3))
+    #T34 = TLink(DH.row(4))
 
-    TGe = TG0 * T01 * T12 * T23 * T34
+    #TGe = TG0 * T01 * T12 * T23 * T34
+    TGe = TG0 * T01 * T12  
 
     TGe = simplify(TGe)
     
 
-    for i in range(5):  # Adjust the range based on the number of matrices
+    for i in range(5-2):  # Adjust the range based on the number of matrices
         T_result = TLink(DH.row(i))
         transformation_matrices.append(T_result)
     
@@ -97,7 +121,7 @@ def save_to_word(result_matrices):
             doc.add_heading(f'Transformation Matrix T{i}-{i+1}', level=1)
         create_table(doc, matrix)
 
-    doc.save('forward_kinematics_result.docx')
+    doc.save('forward_kinematics_result3.docx')
     print("Word document saved with Forward Kinematics result.")
 
 def ask_yes_no_question():
@@ -113,7 +137,6 @@ def ask_yes_no_question():
         else:
             print("Invalid input. Please enter 'yes' or 'no'.")
     return user_input
-
 
 if __name__ == "__main__":
     TGe_result = ForwardKinematics()
