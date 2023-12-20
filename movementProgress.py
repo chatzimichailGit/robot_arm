@@ -1,8 +1,37 @@
+'''
+    Forward Kinematics Table Generator:
+
+    This code is designed to generate a Forward Kinematics Table based on the provided Denavit-Hartenberg (DH) parameters.
+    
+    Authors: Passias Konstantinos, Michael Chatzimichael
+
+    Instructions:
+    1. Ensure that DH parameters are correctly defined for your robot.
+    2. Run the code to generate the Forward Kinematics Table.
+
+---------------------------------------------------------------------------------------
+
+    Inverse Kinematics Validation:
+
+    After obtaining the Forward Kinematics Table, use the following steps to validate Inverse Kinematics:
+    
+    1. Calculate the Inverse Kinematics equations for your robot.
+    2. Substitute theta values with 0 to validate the results.
+    
+    Authors: Passias Konstantinos, Michael Chatzimichael
+
+    Note: Make sure to double-check DH parameters and equations for accurate results.
+
+---------------------------------------------------------------------------------------
+
+    Feel free to modify the code and comments based on your specific robot configuration.
+
+'''
+
+
 from sympy import *
 from sympy.matrices import Matrix
 import docx
-# import pandas as pd
-
 from docx.shared import Pt
 
 doc = docx.Document()
@@ -23,39 +52,15 @@ def ForwardKinematics():
     theta4, theta5 = symbols('theta4, theta5')
     a1, a3, d3 = symbols('a1, a3, d3')
     
-    #Validate equations
-    # theta2 = 0
-    # theta4 = 0
-    # theta5 = 0
+
+    
+    #Validation for Inverse (comment if not needed)
+    # theta1=0
+    # theta2=0
+    # theta3=0
+    #end validation for Inverse
 
     # a | α | d | θ
-    # DH4 = Matrix([
-    #     [0,0,0,pi/2],
-    #     [0,pi/2,0,theta2+pi/2],
-    #     [215.6/scale,0,298.7/scale,0],
-    #     [0,-pi/2,0,theta4-pi/2],
-    #     [356.6/scale,0,0,theta5]
-    # ])
-
-    # DH4 = Matrix([
-    #     [0,0,0,pi/2],
-    #     [0,pi/2,0,theta2+pi/2],
-    #     [a3,0,d3,0],
-    #     [0,-pi/2,0,theta4-pi/2],
-    #     [a4,0,0,theta5]
-    # ])
-
-    # DH4 = Matrix([
-    #     [0,pi/2,0,theta2+pi/2],
-    #     [a3,0,d3,0],
-    #     [0,-pi/2,0,theta4-pi/2],
-    #     [a4,0,0,theta5]
-    # ])
-
-    theta1=0
-    theta2=0
-    theta3=0
-
     DH4 = Matrix([
         [0,pi/2,d1,theta1+pi/2],
         [a1,-pi/2,0,theta2-pi/2],
@@ -121,7 +126,7 @@ def save_to_word(result_matrices):
             doc.add_heading(f'Transformation Matrix T{i}-{i+1}', level=1)
         create_table(doc, matrix)
 
-    doc.save('forward_kinematics_result3.docx')
+    doc.save('forward_kinematics_result.docx')
     print("Word document saved with Forward Kinematics result.")
 
 def ask_yes_no_question():
