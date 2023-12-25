@@ -10,21 +10,40 @@ def inverse_kinematicsCOMB(TGe):
     scale = 1000
     a1 = 215.6 / scale
     d1 = 298.7 / scale
-    a3 = 356.6 / scale
-    
-    theta1 = np.arctan2(-TGe[2, 2], -TGe[0, 2])
+    a2 = 274.51 / scale
+    a3 = 71.3 / scale
 
-    if theta1 != np.pi/2:
-        theta2 = np.arctan2((TGe[2, 3] + TGe[0, 2] * a1) / (TGe[0, 2] * a3), 
-                    -(TGe[1, 3] + d1) / a3)
-    else:
-        theta2 = np.arctan2((-TGe[0, 3] + TGe[2, 2] * a1) / (TGe[2, 2] * a3), 
-                    -(TGe[1, 3] + d1) / a3)
+    X = TGe[0,3]
+    Y = TGe[1,3]
+    Z = TGe[2,3]
 
-    theta3 = np.arctan2(TGe[1, 1], -TGe[1, 0]) - theta2
-
+ 
+    theta1 = np.arctan2(TGe[2, 3], TGe[0, 3])
     
 
+    # if theta1 != np.pi/2:
+    #     theta2 = np.arctan2((TGe[2, 3] + TGe[0, 2] * a1) / (TGe[0, 2] * a2), 
+    #                 -(TGe[1, 3] + d1) / a2)
+    # else:
+    #     theta2 = np.arctan2((-TGe[0, 3] + TGe[2, 2] * a1) / (TGe[2, 2] * a2), 
+    #                 -(TGe[1, 3] + d1) / a2)
+
+    # theta3 = np.arctan2(TGe[1, 1], -TGe[1, 0]) - theta2
+
+    # if theta1 != np.pi/2:
+    #     theta2 = np.arctan2((TGe[2,3]-a1*np.cos(theta1))/np.cos(theta1)*a2, -(TGe[1, 3] + d1) / a2)
+    #     print("I am here \n")
+    # else:
+    #     theta2 = np.arctan2((-TGe[0,3]-a1*np.sin(theta1))/np.sin(theta1)*a2 , -(TGe[1, 3] + d1) / a2)
+
+    # where r and s
+    r = np.sqrt(X**2+Y**2)-d1
+    s = Z-a1
+    sp.pprint(r)
+    sp.pprint(s)
+    theta3 = np.arccos((r**2 +s**2-a2**2-a3**2)/(2*a2*a3))
+    theta2 = np.arcsin(((a2+a3*np.cos(theta3))*s -a3*np.sin(theta3)*r)/(r**2+s**2))
+    theta2 = np.arccos(-(Y + d1) / a2)
     # Convert angles to degrees and round off
     theta1 = round(np.degrees(theta1), 2)
     theta2 = round(np.degrees(theta2), 2)
@@ -59,16 +78,22 @@ R_z = sp.Matrix([[sp.cos(yaw), -sp.sin(yaw), 0],
                  [0, 0, 1]])
 
 # Combine rotations and translations
-R =   R_y * R_z
+R =   R_y * R_z 
 # R =   R_z * R_y
 #sp.pprint(R)
+R = sp.Matrix([[-sp.sin(pitch)*sp.sin(yaw), -sp.sin(pitch)*sp.cos(yaw), -sp.cos(pitch)],
+            [-sp.cos(yaw), sp.sin(yaw), 0],
+            [sp.sin(yaw)*sp.cos(pitch), sp.cos(pitch)*sp.cos(yaw), -sp.sin(pitch)]])
+
 Pcart = sp.Matrix.hstack(R, sp.Matrix([x, y, z]))
 Pcart = sp.Matrix.vstack(Pcart, sp.Matrix([[0, 0, 0, 1]]))
 sp.pprint(Pcart)
 print("\n")
 
 # Define start and end points
-PA = Pcart.subs({x:  -0.572, y: -0.295, z: 0, pitch: sp.pi/2, yaw: sp.pi})
+PA = Pcart.subs({x:  -0.30311977517038, y:  -0.09152467313304, z:   0.25434769154801, pitch: sp.pi/4, yaw: 0.174})
+sp.pprint(PA)
+print("\n")
 PB = Pcart.subs({x: 1, y: 1, z: 1, pitch: sp.pi/2, yaw: sp.pi/2})
 
 # Define via points

@@ -26,6 +26,10 @@
 
     Feel free to modify the code and comments based on your specific robot configuration.
 
+---------------------------------------------------------------------------------------
+    
+    Probs. It prints twice the Trasnformation Matrices because of Tlink function
+
 '''
 
 
@@ -33,6 +37,7 @@ from sympy import *
 from sympy.matrices import Matrix
 import docx
 from docx.shared import Pt
+import math
 
 doc = docx.Document()
 # Settings
@@ -55,16 +60,21 @@ def ForwardKinematics():
 
     
     #Validation for Inverse (comment if not needed)
-    # theta1=0
-    # theta2=0
-    # theta3=0
-    #end validation for Inverse
+    theta1=math.radians(50)
+    theta2=math.radians(139)
+    theta3=math.radians(0)
+    scale = 1000
+    a1 = 215.6 / scale
+    d1 = 298.7 / scale
+    a2 = 274.51 / scale
+    a3 = 71.3 / scale
+    # #end validation for Inverse
 
-    # a | α | d | θ
+    # a | α | d | θ 135 -80 0
     DH4 = Matrix([
         [0,pi/2,d1,theta1+pi/2],
         [a1,-pi/2,0,theta2-pi/2],
-        [a3,0,0,theta3]
+        [a2,0,0,theta3]
     ])
 
     DH = DH4
@@ -81,7 +91,7 @@ def ForwardKinematics():
     TGe = simplify(TGe)
     
 
-    for i in range(5-2):  # Adjust the range based on the number of matrices
+    for i in range(3):  # Adjust the range based on the number of matrices
         T_result = TLink(DH.row(i))
         transformation_matrices.append(T_result)
     
