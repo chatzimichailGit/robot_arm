@@ -50,30 +50,28 @@ scale =1
 transformation_matrices = []
 
 
-# INSTALL SYMPY . pip3 install sympy
-
 def ForwardKinematics():
     d1, theta1, theta2, theta3, L2, L3 = symbols('d1, theta1, theta2, theta3, L2, L3')
     theta4, theta5 = symbols('theta4, theta5')
-    a1, a3, d3 = symbols('a1, a3, d3')
+    a1, a2, a3, d3 = symbols('a1, a2, a3, d3')
     
 
     
     #Validation for Inverse (comment if not needed)
-    theta1=math.radians(50)
-    theta2=math.radians(139)
-    theta3=math.radians(0)
-    scale = 1000
-    a1 = 215.6 / scale
-    d1 = 298.7 / scale
-    a2 = 274.51 / scale
-    a3 = 71.3 / scale
+    # theta1=math.radians(122)
+    # theta2=math.radians(-71)
+    # theta3=math.radians(0)
+    # scale = 1000
+    # a1 = 215.6 / scale
+    # d1 = 298.7 / scale
+    # a2 = 274.51 / scale
+    # a3 = 71.3 / scale
     # #end validation for Inverse
 
-    # a | α | d | θ 135 -80 0
+    # a | α | d | θ 
     DH4 = Matrix([
-        [0,pi/2,d1,theta1+pi/2],
-        [a1,-pi/2,0,theta2-pi/2],
+        [0,pi/2,d1,theta1],
+        [a1,-pi/2,0,theta2],
         [a2,0,0,theta3]
     ])
 
@@ -82,11 +80,8 @@ def ForwardKinematics():
     TG0 = TLink(DH.row(0))
     T01 = TLink(DH.row(1))
     T12 = TLink(DH.row(2))
-    #T23 = TLink(DH.row(3))
-    #T34 = TLink(DH.row(4))
 
-    #TGe = TG0 * T01 * T12 * T23 * T34
-    TGe = TG0 * T01 * T12  
+    TGe = TG0 * T01 * T12 
 
     TGe = simplify(TGe)
     
@@ -112,8 +107,8 @@ def TLink(DH):
         [0, 0, 0, 1]
     ])
 
-    print("Matrix T:")
-    pprint(T)
+    # print("Matrix T:")
+    # pprint(T)
 
     return T
 
