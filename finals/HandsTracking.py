@@ -49,7 +49,7 @@ def control_robot_arm(results, screen_width, screen_height):
 
             # Check if the hand is in a fist
             if is_fist(hand_landmarks, tolerance=-2):
-                print(f"{hand_side} Hand is in a fist.")
+                # print(f"{hand_side} Hand is in a fist.")
                 continue  # Skip the processing for the fist, move to the next hand
 
             if hand_side == "Right":
@@ -63,8 +63,12 @@ def control_robot_arm(results, screen_width, screen_height):
 
                 x_percentage = round(correct_percentage(x_percentage, -50), 2)
 
+                global x,z 
+                z = z_percentage
+                x = x_percentage
+
                 # Print values only if the right hand is not in a fist
-                print(f"{hand_side} Hand - X: {x_percentage}%, Z: {z_percentage}")
+                # print(f"{hand_side} Hand - X: {x_percentage}%, Z: {z_percentage}")
 
                 # Draw line from hand center to right side center
                 hand_center = (int(middle_finger_base.x * screen_width), int(middle_finger_base.y * screen_height))
@@ -86,8 +90,11 @@ def control_robot_arm(results, screen_width, screen_height):
 
                 phi_percentage = round(correct_percentage(phi_percentage, 50), 2)
 
+                global phi 
+                phi = phi_percentage
+
                 # Print values only if the left hand is not in a fist
-                print(f"{hand_side} Hand - Phi: {phi_percentage}%")
+                # print(f"{hand_side} Hand - Phi: {phi_percentage}%")
 
                 # Draw line from hand center to left side center
                 hand_center = (int(phi_base.x * screen_width), int(phi_base.y * screen_height))
@@ -111,6 +118,11 @@ hands = mp_hands.Hands()
 start_time = time.time()
 cap = cv2.VideoCapture(0)
 
+x = 0.0
+z = 0.0
+phi = 0.0
+
+
 while cap.isOpened():
     ret, frame = cap.read()
     if not ret:
@@ -130,6 +142,8 @@ while cap.isOpened():
     current_time = time.time()
     fps = 1.0 / (current_time - start_time)
     start_time = current_time
+
+    print(f"x: {x}%, z: {z}%, phi: {phi}%, fps: {round(fps,2)}")
 
     # Display FPS at the top left corner
     cv2.putText(frame, f"FPS: {round(fps, 2)}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1, cv2.LINE_AA)
