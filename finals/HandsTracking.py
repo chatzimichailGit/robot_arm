@@ -111,6 +111,9 @@ hands = mp_hands.Hands()
 start_time = time.time()
 cap = cv2.VideoCapture(0)
 
+print_interval = 0.4  # Interval between prints, in seconds
+last_print_time = time.time()  # Initialize the last print time
+
 while cap.isOpened():
     ret, frame = cap.read()
     if not ret:
@@ -124,19 +127,19 @@ while cap.isOpened():
     window_width, window_height = get_window_dimensions()
     center_point = (window_width // 2, window_height // 2)
 
-    #draw_axes(frame, center_point)
-    control_robot_arm(results, window_width, window_height)
-    
+    # Uncomment the line below if you want to draw axes
+    # draw_axes(frame, center_point)
+
     current_time = time.time()
+    if current_time - last_print_time >= print_interval:
+        control_robot_arm(results, window_width, window_height)
+        last_print_time = current_time  # Update the last print time
+
     fps = 1.0 / (current_time - start_time)
     start_time = current_time
 
     # Display FPS at the top left corner
     cv2.putText(frame, f"FPS: {round(fps, 2)}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1, cv2.LINE_AA)
-
-    # if results.multi_hand_landmarks:
-    #     for landmarks in results.multi_hand_landmarks:
-    #         mp.solutions.drawing_utils.draw_landmarks(frame, landmarks, mp_hands.HAND_CONNECTIONS)
 
     cv2.imshow('Hand Tracking', frame)
 
