@@ -7,8 +7,10 @@ import cv2
 import mediapipe as mp
 import pygetwindow as gw
 import time
+import sympy as sp
 
 from InverseController import *
+
 
 def map_value(value, from_min, from_max, to_min, to_max):
     return (value - from_min) * (to_max - to_min) / (from_max - from_min) + to_min
@@ -193,34 +195,63 @@ def map_theta1(theta1):
     return mapped_theta1
 
 def map_theta2(theta2):
-    # Map theta2 from [-180, 0, 180] to [-180, -90, 0]
+    # Map theta2 from [-90, 0, 90] to [-180, -90, 0]
     mapped_theta2 = theta2 - 90
     return mapped_theta2
 
 def commander(theta1_v, theta2_v, phi_v, fps):
-   
     #step = (|max|+|min|)/100
+    global limit_t1, limit_t2, limit_t3, limit_t4
     theta1 = round(map_theta1(theta1_v[1] * 180), 2)
     theta2 = round(map_theta2(theta2_v[1] * 90), 2)
     phi = round(phi_v[1] * 110, 2)
 
+    temp_theta1 = round(theta1_v[1]*180,2)
+
     # LIMITS 
-    if theta1>150 :
+    if theta1>=150 :
         theta1 = 150
-    elif theta1<30 :
+        limit_t1 = False
+    elif theta1<=30 :
         theta1 = 30
+        limit_t1 = False
+    else :
+        limit_t1 = True
+        
     
-    if theta2>-30 :
+    if theta2>=-30 :
         theta2 = -30
-    elif theta2<-150 :
+        limit_t2 = False
+    elif theta2<=-150 :
         theta2=-150
+        limit_t2 = False
+    else:
+        limit_t2 = True
     
     if phi>90:
         phi=90
     elif phi<-90:
         phi = -90
-    print(f"theta1: {theta1} , theta2: {theta2} , phi: {phi}, fps: {round(fps,2)}")
 
+    if temp_theta1>150:
+        temp_theta1 = 150
+    elif temp_theta1<-150:
+        temp_theta1 = 150
+
+    theta3 = phi - theta2 - 90
+    theta3 = round(theta3, 2)
+
+    theta4 = round(-temp_theta1/2, 2)
+
+    # if theta3 >-30 or theta3<
+
+    if theta4 < 25 or theta4 > -75:
+        limit_t4 = True
+
+
+    print(f"theta1: {theta1} , theta2: {theta2} , theta3: {theta3}, theta4: {theta4},  phi: {phi}, fps: {round(fps,2)}")
+    
+    return theta1,theta2,theta3,theta4
    
 
     # av_speed = (movement_x + movement_z + movement_phi)/3*fps
@@ -238,6 +269,11 @@ theta1_values = [0.0, 0.0]  # Initialize with at least two elements
 theta2_values = [0.0, 0.0]  # Initialize with at least two elements
 phi_values = [0.0, 0.0]  # Initialize with at least two elements
 
+global limit_t1, limit_t2, limit_t3, limit_t4
+limit_t1 = False
+limit_t2 = False
+limit_t3 = False
+limit_t4 = False
 
 while cap.isOpened():
     ret, frame = cap.read()
@@ -266,11 +302,50 @@ while cap.isOpened():
     theta1_values[1]=theta1/temp_adjust
     theta2_values[1]=theta2/temp_adjust
     phi_values[1]=phi/temp_adjust  
-    commander(theta1_values, theta2_values, phi_values, fps)
+    f_theta1, f_theta2, f_theta3, f_theta4 = commander(theta1_values, theta2_values, phi_values, fps)
     # print(f"theta1: {theta1}%, theta2: {theta2}%, phi: {phi}%, fps: {round(fps,2)}")
 
     # Display FPS at the top left corner
     cv2.putText(frame, f"FPS: {round(fps, 2)}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1, cv2.LINE_AA)
+
+
+    font_size = 0.4
+    text_color = (255, 255, 255)
+    circle_radius = 6
+    circle_color_true = (0, 255, 0)  # Green
+    circle_color_false = (0, 0, 255)  # Red
+
+    # t1 text
+    cv2.putText(frame, f"t1: {round(f_theta1, 2)}", (window_width - 120, 30), cv2.FONT_HERSHEY_SIMPLEX, font_size, text_color, 1, cv2.LINE_AA)
+
+    # t2 text
+    cv2.putText(frame, f"t2: {round(f_theta2, 2)}", (window_width - 120, 50), cv2.FONT_HERSHEY_SIMPLEX, font_size, text_color, 1, cv2.LINE_AA)
+
+    # t3 text
+    cv2.putText(frame, f"t3: {round(f_theta3, 2)}", (window_width - 120, 70), cv2.FONT_HERSHEY_SIMPLEX, font_size, text_color, 1, cv2.LINE_AA)
+
+    # t4 text
+    cv2.putText(frame, f"t4: {round(f_theta4, 2)}", (window_width - 120, 90), cv2.FONT_HERSHEY_SIMPLEX, font_size, text_color, 1, cv2.LINE_AA)
+
+    # Define limit values for each theta
+    # limit_t1 = True  # Replace with your actual limit condition
+    # limit_t2 = True  # Replace with your actual limit condition
+    # limit_t3 = True  # Replace with your actual limit condition
+    # limit_t4 = True  # Replace with your actual limit condition
+
+    # Draw circles next to each theta value
+    # t1 circle
+    adjust = 5
+    cv2.circle(frame, (window_width - 140, 30 - adjust), circle_radius, circle_color_true if limit_t1 else circle_color_false, -1)
+
+    # t2 circle
+    cv2.circle(frame, (window_width - 140, 50 - adjust), circle_radius, circle_color_true if limit_t2 else circle_color_false, -1)
+
+    # t3 circle
+    cv2.circle(frame, (window_width - 140, 70 - adjust), circle_radius, circle_color_true if limit_t3 else circle_color_false, -1)
+
+    # t4 circle
+    cv2.circle(frame, (window_width - 140, 90 - adjust), circle_radius, circle_color_true if limit_t4 else circle_color_false, -1)
 
     if results.multi_hand_landmarks:
         for landmarks in results.multi_hand_landmarks:
