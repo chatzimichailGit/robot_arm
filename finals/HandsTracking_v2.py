@@ -204,7 +204,7 @@ def commander(theta1_v, theta2_v, phi_v, fps):
     global limit_t1, limit_t2, limit_t3, limit_t4, limit_phi
     
     desired_end_of_screen = 80
-    desired_end_of_screen_phi = 60 #lower limits
+    desired_end_of_screen_phi = 90-(desired_end_of_screen-20)+20 #lower limits
 
     theta1 = round((theta1_v[1] * desired_end_of_screen), 2)
     theta2 = round((theta2_v[1] * desired_end_of_screen), 2)
@@ -287,6 +287,9 @@ limit_t2 = False
 limit_t3 = False
 limit_t4 = False
 limit_phi = False
+
+cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
+cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
 
 while cap.isOpened():
     ret, frame = cap.read()
