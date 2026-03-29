@@ -3,6 +3,14 @@ import mediapipe as mp
 import pygetwindow as gw
 import time
 
+# Global variables to store the previous angles and last detection time
+prev_theta1 = 0
+prev_theta2 = 0
+prev_theta3 = 0
+prev_theta4 = 0
+hand_center = (0, 0)
+
+
 def map_value(value, from_min, from_max, to_min, to_max):
     return (value - from_min) * (to_max - to_min) / (from_max - from_min) + to_min
 
@@ -14,14 +22,11 @@ def get_window_dimensions():
 def determine_hand_side(hand_landmarks, screen_width):
     thumb_tip = hand_landmarks.landmark[mp.solutions.hands.HandLandmark.THUMB_TIP.value]
     pinky_mcp = hand_landmarks.landmark[mp.solutions.hands.HandLandmark.PINKY_MCP.value]
-    
+
     thumb_tip_x = thumb_tip.x
     pinky_mcp_x = pinky_mcp.x
-    
-    return "Right" if thumb_tip_x < pinky_mcp_x else "Left"
 
-def correct_percentage(value, correction):
-    return (value + correction) * 2
+    return "Right" if thumb_tip_x < pinky_mcp_x else "Left"
 
 def is_fist(hand_landmarks, tolerance=0.1):
     thumb_tip_y = hand_landmarks.landmark[mp.solutions.hands.HandLandmark.THUMB_TIP.value].y
@@ -43,68 +48,49 @@ def is_fist(hand_landmarks, tolerance=0.1):
         return False
 
 def control_robot_arm(results, screen_width, screen_height):
+    global prev_theta1, prev_theta2, prev_theta3, prev_theta4, hand_center, last_detection_time
+
     if results.multi_hand_landmarks:
         for hand_landmarks in results.multi_hand_landmarks:
             hand_side = determine_hand_side(hand_landmarks, screen_width)
 
             # Check if the hand is in a fist
-            if is_fist(hand_landmarks, tolerance=-2):
+            if is_fist(hand_landmarks, tolerance=-5):
                 print(f"{hand_side} Hand is in a fist.")
+                # Update the last detection time
+                last_detection_time = time.time()
                 continue  # Skip the processing for the fist, move to the next hand
 
-            if hand_side == "Right":
-                middle_finger_base = hand_landmarks.landmark[mp.solutions.hands.HandLandmark.MIDDLE_FINGER_MCP.value]
+            # Calculate the time since the last detection
+            time_since_detection = time.time() - last_detection_time
 
-                x_value = map_value(middle_finger_base.x, 0, 1, - screen_width / 2, screen_width / 2)
-                z_value = map_value(middle_finger_base.y, 0, 1, screen_height / 2, -screen_height / 2)  # Reverse Z direction
+            # Check if the hand was not detected for 2 seconds
+            if time_since_detection >= 2:
+                # Save the current hand position as the new reference point
+                hand_center = (
+                    int(hand_landmarks.landmark[mp.solutions.hands.HandLandmark.MIDDLE_FINGER_MCP.value].x * screen_width),
+                    int(hand_landmarks.landmark[mp.solutions.hands.HandLandmark.MIDDLE_FINGER_MCP.value].y * screen_height)
+                )
+                # Print or use the reference point as needed
+                print(f"New reference point: {hand_center}")
+                last_detection_time = time.time()
 
-                x_percentage = round((x_value / (screen_width / 2)) * 100, 2)
-                z_percentage = round((z_value / (screen_height / 2)) * 100, 2)
+            # Calculate angles relative to the initial hand detection
+            x_value = map_value(hand_landmarks.landmark[mp.solutions.hands.HandLandmark.MIDDLE_FINGER_MCP.value].x,
+                                0, 1, -screen_width / 2, screen_width / 2)
+            z_value = map_value(hand_landmarks.landmark[mp.solutions.hands.HandLandmark.MIDDLE_FINGER_MCP.value].y,
+                                0, 1, screen_height / 2, -screen_height / 2)
 
-                x_percentage = round(correct_percentage(x_percentage, -50), 2)
+            theta1 = map_value(x_value, -screen_width / 2, screen_width / 2, prev_theta1 - 180, prev_theta1 + 180)
+            theta2 = map_value(z_value, -screen_height / 2, screen_height / 2, prev_theta2 - 180, prev_theta2 + 180)
 
-                # Print values only if the right hand is not in a fist
-                print(f"{hand_side} Hand - X: {x_percentage}%, Z: {z_percentage}")
+            # Print or use the calculated angles as needed
+            print(f"{hand_side} Hand - Theta1: {theta1}, Theta2: {theta2}")
 
-                # Draw line from hand center to right side center
-                hand_center = (int(middle_finger_base.x * screen_width), int(middle_finger_base.y * screen_height))
-                screen_center = (screen_width * 3 // 4, screen_height // 2)
-                cv2.line(frame, hand_center, screen_center, (11, 190, 255), 4)
+            # Additional code for sending angles to the robot as needed
 
-                # Display X and Z percentages above the line
-                cv2.putText(frame, f"X: {x_percentage}%", (hand_center[0] + 10, hand_center[1] - 10),
-                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (110, 0, 255), 1, cv2.LINE_AA)
-                cv2.putText(frame, f"Z: {z_percentage}%", (hand_center[0] + 10, hand_center[1] - 30),
-                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1, cv2.LINE_AA)
-
-            elif hand_side == "Left":
-                phi_base = hand_landmarks.landmark[mp.solutions.hands.HandLandmark.MIDDLE_FINGER_MCP.value]
-
-                phi_value = map_value(phi_base.x, 0, 1, - screen_width / 2, screen_width / 2)
-
-                phi_percentage = round((phi_value / (screen_width / 2)) * 100, 2)
-
-                phi_percentage = round(correct_percentage(phi_percentage, 50), 2)
-
-                # Print values only if the left hand is not in a fist
-                print(f"{hand_side} Hand - Phi: {phi_percentage}%")
-
-                # Draw line from hand center to left side center
-                hand_center = (int(phi_base.x * screen_width), int(phi_base.y * screen_height))
-                screen_center = (screen_width // 4, screen_height // 2)
-                cv2.line(frame, hand_center, screen_center, (11, 190, 255), 4)
-
-                # Display Phi percentage above the line
-                cv2.putText(frame, f"Phi: {phi_percentage}%", (hand_center[0] + 10, hand_center[1] - 10),
-                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (110, 0, 255), 1, cv2.LINE_AA)
-
-def draw_axes(frame, center):
-    # Draw +-X axis in grey
-    cv2.line(frame, center, (frame.shape[1], center[1]), (169, 169, 169), 1)
-    cv2.line(frame, center, (0, center[1]), (169, 169, 169), 1)
-    # Draw +-Z axis in purple
-    cv2.line(frame, center, (center[0], frame.shape[0]), (169, 169, 169), 1)
-    cv2.line(frame, center, (center[0], 0), (169, 169, 169), 1)  # Reverse Z direction
+            # Update previous angles
+            prev_theta1, prev_theta2, prev_theta3, prev_theta4 = theta1, theta2, prev_theta3, prev_theta4
 
 mp_hands = mp.solutions.hands
 hands = mp_hands.Hands()
@@ -125,10 +111,7 @@ while cap.isOpened():
     results = hands.process(rgb_frame)
 
     window_width, window_height = get_window_dimensions()
-    center_point = (window_width // 2, window_height // 2)
-
-    # Uncomment the line below if you want to draw axes
-    # draw_axes(frame, center_point)
+    center_point = hand_center  # Use hand center instead of screen center
 
     current_time = time.time()
     if current_time - last_print_time >= print_interval:

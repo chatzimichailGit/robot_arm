@@ -22,15 +22,10 @@ unsigned long previousMillis2 = 0; // Will store the last time servo2 was update
 long moveDuration1 = 3000; // Duration of servo1 movement in milliseconds
 long moveDuration2 = 3000; // Duration of servo2 movement in milliseconds
 
-int startAngle1 = 90; // Starting angle for first servo
-int startAngle2 = 90; // Starting angle for second servo
-
-int endAngle1 = 90; // Ending angle for first servo
-int endAngle2 = 90; // Ending angle for second servo
 
 
 long gotoposition[2]; // Array to store the target positions for each stepper motor
-int temp1, temp2, temp3;
+int temp1, temp2;
 int maxSpeed1 = 500, maxSpeed2 = 1000;
 int acceleration1 = 500, acceleration2 = 1000;
 float stepAngle = 1.8;
@@ -65,45 +60,44 @@ void setup() {
 }
 
 void loop() {
-    if (Serial.available() > 0) {
-        String data = Serial.readStringUntil('\n');
+  if (Serial.available() > 0) {
+    String data = Serial.readStringUntil('\n');
 
-        int commaIndex1 = data.indexOf(',');
-        temp1 = data.substring(0, commaIndex1).toInt();
+    int commaIndex = data.indexOf(',');
 
-        int commaIndex2 = data.indexOf(',', commaIndex1 + 1);
-        temp2 = data.substring(commaIndex1 + 1, commaIndex2).toInt();
+    if (commaIndex != -1) {
+      int temp1 = data.substring(0, commaIndex).toInt();
+      int temp2 = data.substring(commaIndex + 1).toInt();
 
-        temp3 = data.substring(commaIndex2 + 1).toInt();
+      targetPosition1 = (temp1 * stepsPerRevolution) / 360; // Convert degrees to steps
+      targetPosition2 = (temp2 * stepsPerRevolution) / 360;
 
-        targetPosition1 = (temp1 * stepsPerRevolution) / 360; // Convert degrees to steps
-        targetPosition2 = (temp2 * stepsPerRevolution) / 360;
+      steppersControl.moveTo(gotoposition);
+      steppersControl.runSpeedToPosition(); // Block until all steppers reach their target position
 
-        gotoposition[0] = targetPosition1;
-        gotoposition[1] = targetPosition2;
+      moveServo(servo1, temp1, moveDuration1); // Move servo1 to the desired angle
+      moveServo(servo2, temp2, moveDuration2); // Move servo2 to the desired angle
 
-        steppersControl.moveTo(gotoposition);
-        steppersControl.runSpeedToPosition(); // Block until all steppers reach their target position
+      //digitalWrite(8, HIGH); // Disable the motors
 
-        moveServo(servo1, startAngle1, endAngle1, previousMillis1, moveDuration1);
-        moveServo(servo2, startAngle2, endAngle2, previousMillis2, moveDuration2);
-
-        //digitalWrite(8, HIGH); // Disable the motors
-
-        Serial.println("Moved to position: " + String(temp1) + ", " + String(temp2));
+      Serial.println("Moved to position: " + String(temp1) + ", " + String(temp2));
+    } else {
+      Serial.println("Invalid data received");
     }
+  }
 }
 
 
-void moveServo(Servo &servo, int &startAngle, int &endAngle, unsigned long &previousMillis, long moveDuration) {
+void moveServo(Servo &servo, int targetAngle, long moveDuration) {
     unsigned long currentMillis = millis();
+    int currentAngle = servo.read();
 
-    if (startAngle != endAngle && currentMillis - previousMillis <= moveDuration) {
+    if (currentAngle != targetAngle) {
         float proportion = (float)(currentMillis - previousMillis) / (float)moveDuration;
-        int currentAngle = startAngle + (int)(proportion * (endAngle - startAngle));
-        servo.write(currentAngle);
-    } else if (currentMillis - previousMillis > moveDuration) {
-        startAngle = endAngle; // Update the start angle after movement is complete
-        previousMillis = currentMillis;
+        int newAngle = startAngle + (int)(proportion * (targetAngle - currentAngle));
+        servo.write(newAngle);
+    } else {
+        previousMillis = currentMillis; // Update the start time after movement is complete
     }
 }
+
