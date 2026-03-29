@@ -19,7 +19,7 @@ PB = Pcart.subs({x: -0.1867150770559, y: -0.57321, z: 0.1078, phi: 45})
 
 # Define via points
 Pvia = {
-    1: Pcart.subs({x: 0.2156, y: 5.722, z: 0.6553, phi: 90}),
+    1: Pcart.subs({x: 0.2156, y: 0.5722, z: 0.6553, phi: 90}),
     2: Pcart.subs({x: -0.2074348413120, y: -0.5721654065731, z: 0.1197625614708, phi: 45}),
     3: Pcart.subs({x:  0, y: -0.57321, z: 0.2156, phi: 45}), #starting with new homogeneous
     4: Pcart.subs({x: -0.114250593, y:-0.57321, z:0.18283916, phi: 0}),

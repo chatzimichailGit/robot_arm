@@ -72,7 +72,7 @@ def ForwardKinematics():
     DH4 = Matrix([
         [0,pi/2,d1,theta1],
         [a1,-pi/2,0,theta2],
-        [a2,0,0,theta3]
+        [a2,0,0.071,theta3]
     ])
 
     DH = DH4
