@@ -25,7 +25,6 @@ This repository contains the code and documentation for a 3D printed robot arm c
 ## Goals
 - Demonstrate hardware/software integration
 - Showcase practical robotics with computer vision
-- Provide a clean portfolio project for CV/LinkedIn
 
 ## License
 MIT
