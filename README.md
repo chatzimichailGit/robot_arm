@@ -25,6 +25,18 @@ This repository contains the code and documentation for a 3D printed robot arm c
 ## Goals
 - Demonstrate hardware/software integration
 - Showcase practical robotics with computer vision
+- Provide a clean portfolio project for CV/LinkedIn
+
+## Project story
+- Co-developed the robotic arm with my teammate `kpassias`, contributing to the mechanical design, the kinematic model, and the integration of the full system from software to hardware.
+- Derived the forward and inverse kinematics for the arm to understand its motion and support the control design, even though the inverse model was not required in the final control path.
+- Built and assembled the physical prototype using 3D-printed parts, stepper motors, belts, planetary gearing, and an Arduino CNC shield to drive the actuators.
+- Worked across electronics, programming, mechanical integration, wiring, and final assembly, making this a multidisciplinary robotics project rather than only a software demo.
+
+## What I learned
+- Applied robotics fundamentals by moving from kinematic modeling into practical actuator control and hardware constraints.
+- Gained hands-on experience with Arduino-based motion control, CNC shield motor driving, and the mechanical tradeoffs of belts and gearing in a real prototype.
+- Learned how computer vision, embedded control, and physical assembly have to work together for a robotic system to behave reliably.
 
 ## License
 MIT
